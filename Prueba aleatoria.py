@@ -16,9 +16,13 @@ EARS_VALUES = {
 
 ORDER_FREQS = [3,4,5,6,0,1,2,3]
 
-def frequency_run(ear, frequency, time_array, power_gains):
+def frequency_run(ear, frequency, time_array, niveles_por_frecuencia):
     
     tone = np.sin(2 * np.pi * frequency * time_array)
+    
+    gain_steps = np.linspace(RETA-1, RETD+4, (RETD - RETA + 6))
+    
+    power_gains = (1/(2**gain_steps)) #Resolución de los pasos
     
     level_idx = 0
     
@@ -42,24 +46,36 @@ def frequency_run(ear, frequency, time_array, power_gains):
     return level_idx
         
 def main(RETD, RETA, audio_secs, ear):
+    
     time_array = np.arange(SAMPLE_RATE * audio_secs) / SAMPLE_RATE #Vector tiempo
     
-    gain_steps = np.linspace(RETA-1, RETD+4, (RETD - RETA + 6))
+    niveles_por_frecuencia = []
+
+    # Iterar a través de las frecuencias
+    for frecuencia in AUDIOMETRIC_FREQS:
+        # Filtrar los datos de RETD y RETA para la frecuencia actual
+        datos_RETD = RETD[RETD[:, 0] == frecuencia, 1]
+        datos_RETA = RETA[RETA[:, 0] == frecuencia, 1]
+        
+        minimo = min(np.min(datos_RETD), np.min(datos_RETA))
+        maximo = max(np.max(datos_RETD), np.max(datos_RETA))
     
-    power_gains = (1/(2**gain_steps)) #Resolución de los pasos
+        # Crear un vector que vaya de un extremo al otro con pasos de 1
+        vector_niveles = np.arange(minimo, maximo + 1)
+        niveles_por_frecuencia.append((frecuencia, vector_niveles))
    
     
     results = []
     for freq_i in AUDIOMETRIC_FREQS[ORDER_FREQS]:
-        level_idx = frequency_run(ear, freq_i, time_array, power_gains)
+        level_idx = frequency_run(ear, freq_i, time_array, niveles_por_frecuencia)
         print(f"{freq_i} Hz: {20*np.log10(power_gains[level_idx])}")
         results.append((freq_i,level_idx))
 #        print(results)
     return results
 
 if __name__ == "__main__":    
-    RETD = [(1000, 12),(2000, 13),(4000, 11),(8000, 7),(125, 8),(250, 8),(500, 9),(1000, 12)]
-    RETA = 7
+    RETD = np.array([(1000, 12),(2000, 13),(4000, 11),(8000, 7),(125, 8),(250, 8),(500, 9),(1000, 12)])
+    RETA = np.array([(1000, 7),(2000, 7),(4000, 7),(8000, 13),(125, 13),(250, 12),(500, 10),(1000, 8)])
     audio_secs = 1
     ear = "right"
     RETDD = main(RETD, RETA, audio_secs, ear)

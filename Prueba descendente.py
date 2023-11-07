@@ -63,6 +63,7 @@ if __name__ == "__main__":
     audio_secs = 1
     ear = "right"
     RETD = main(initial_level, audio_secs, ear)
+    RETD = np.array(RETD)
    # Imprimir los resultados (opcional)
 #    for freq, level in RETD:
 #        print(f"{freq} Hz: {level}")

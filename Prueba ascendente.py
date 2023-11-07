@@ -60,6 +60,7 @@ if __name__ == "__main__":
     audio_secs = 1
     ear = "right"
     RETA = main(initial_level, audio_secs, ear)
+    RETA = np.array(RETA)
    # Imprimir los resultados (opcional)
 #    for freq, level in RETA:
 #        print(f"{freq} Hz: {level}")
